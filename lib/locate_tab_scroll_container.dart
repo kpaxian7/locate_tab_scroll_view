@@ -4,14 +4,12 @@ import 'package:flutter/rendering.dart';
 class LocateTabScrollContainer extends StatefulWidget {
   final TabController tabController;
   final List<GlobalKey> headerWidgetsKey;
-  final GlobalKey indicatorWidgetKey;
   final List<GlobalKey> bodyWidgetsKey;
   final CustomScrollView child;
 
   const LocateTabScrollContainer({
     required this.tabController,
     required this.headerWidgetsKey,
-    required this.indicatorWidgetKey,
     required this.bodyWidgetsKey,
     required this.child,
     super.key,
@@ -78,9 +76,7 @@ class _LocateTabScrollContainerState extends State<LocateTabScrollContainer>
       return;
     }
     if (widget.tabController.indexIsChanging == false) {
-      print("tab index changed!, index = ${widget.tabController.index ?? 0}");
-
-      int clickIndex = widget.tabController.index ?? 0;
+      int clickIndex = widget.tabController.index;
       _tabClicked(clickIndex);
     }
   }
