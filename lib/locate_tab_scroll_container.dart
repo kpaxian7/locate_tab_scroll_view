@@ -7,11 +7,14 @@ class LocateTabScrollContainer extends StatefulWidget {
   final List<GlobalKey> bodyWidgetsKey;
   final CustomScrollView child;
 
+  final Duration scrollDuration;
+
   const LocateTabScrollContainer({
     required this.tabController,
     required this.headerWidgetsKey,
     required this.bodyWidgetsKey,
     required this.child,
+    this.scrollDuration = const Duration(milliseconds: 200),
     super.key,
   }) : assert(tabController.length == bodyWidgetsKey.length,
             "The indicator length must be the same as the number of body widgets!");
@@ -150,7 +153,7 @@ class _LocateTabScrollContainerState extends State<LocateTabScrollContainer>
     }
 
     _scrollController?.animateTo(toOffset,
-        duration: const Duration(milliseconds: 100), curve: Curves.linear);
+        duration: widget.scrollDuration, curve: Curves.linear);
   }
 
   @override
