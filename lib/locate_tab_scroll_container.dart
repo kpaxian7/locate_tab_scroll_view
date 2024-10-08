@@ -35,7 +35,7 @@ class _LocateTabScrollContainerState extends State<LocateTabScrollContainer>
     super.initState();
     _tabController = widget.tabController;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      assembleWidgetsOffset();
+      _assembleWidgetsOffset();
     });
     widget.tabController.addListener(_tabControllerListener);
   }
@@ -47,8 +47,8 @@ class _LocateTabScrollContainerState extends State<LocateTabScrollContainer>
         widget.child.controller ?? PrimaryScrollController.maybeOf(context);
   }
 
-  void assembleWidgetsOffset() {
-    /// header
+  void _assembleWidgetsOffset() {
+    // header offset
     double topWidgetsHeight = 0.0;
     for (GlobalKey key in widget.headerWidgetsKey) {
       RenderObject? renderObject = key.currentContext?.findRenderObject();
@@ -58,7 +58,7 @@ class _LocateTabScrollContainerState extends State<LocateTabScrollContainer>
     }
     widgetsOffsetList.add(topWidgetsHeight);
 
-    /// body
+    // body offset
     double bottomWidgetsHeight = 0.0;
 
     for (GlobalKey key in widget.bodyWidgetsKey) {
@@ -70,7 +70,7 @@ class _LocateTabScrollContainerState extends State<LocateTabScrollContainer>
     }
   }
 
-  ///
+  /// tab index changed
   void _tabControllerListener() {
     if (startByScroll) {
       return;
@@ -86,8 +86,6 @@ class _LocateTabScrollContainerState extends State<LocateTabScrollContainer>
       return;
     }
     double scrollViewOffset = _scrollController?.offset ?? 0.0;
-    print("scrollViewOffset = $scrollViewOffset");
-    print("widgetsOffsetList = $widgetsOffsetList");
 
     int toIndex = -1;
     for (int i = widgetsOffsetList.length - 1; i >= 0; i--) {
@@ -102,7 +100,6 @@ class _LocateTabScrollContainerState extends State<LocateTabScrollContainer>
       toIndex = 0;
     }
 
-    print("toIndex = $toIndex");
     _tabController.animateTo(toIndex);
   }
 
@@ -111,21 +108,13 @@ class _LocateTabScrollContainerState extends State<LocateTabScrollContainer>
         notification.metrics.axis == Axis.horizontal) {
       return false;
     }
-    switch (notification.runtimeType) {
-      case ScrollStartNotification:
-        print("收到start");
-        startByScroll = true;
-        break;
-      case ScrollUpdateNotification:
-        print("收到update");
-        // print("收到ScrollUpdateNotification");
-        _scrollViewUpdating();
-        break;
-      case ScrollEndNotification:
-        print("收到end");
-        startByScroll = false;
-        startByTabClick = false;
-        break;
+    if (notification is ScrollStartNotification) {
+      startByScroll = true;
+    } else if (notification is ScrollUpdateNotification) {
+      _scrollViewUpdating();
+    } else if (notification is ScrollEndNotification) {
+      startByScroll = false;
+      startByTabClick = false;
     }
     return false;
   }
@@ -153,10 +142,12 @@ class _LocateTabScrollContainerState extends State<LocateTabScrollContainer>
       }
     }
 
-    print("topWidgetsHeight = $topWidgetsHeight");
-    print("bottomWidgetsHeight = $bottomWidgetsHeight");
     double toOffset = topWidgetsHeight + bottomWidgetsHeight;
-    print("scroll animate to = $toOffset");
+
+    double maxScrollExtent = _scrollController?.position.maxScrollExtent ?? 0.0;
+    if (toOffset > maxScrollExtent) {
+      toOffset = maxScrollExtent;
+    }
 
     _scrollController?.animateTo(toOffset,
         duration: const Duration(milliseconds: 100), curve: Curves.linear);
