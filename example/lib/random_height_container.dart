@@ -13,11 +13,11 @@ class RandomHeightContainer extends StatefulWidget {
 }
 
 class _RandomHeightContainerState extends State<RandomHeightContainer> {
-  double _height = 200;
+  double _height = 300;
 
   _resetHeight() {
     setState(() {
-      _height = 200.0 + Random.secure().nextInt(100);
+      _height = 300.0 + Random.secure().nextInt(100);
     });
   }
 
