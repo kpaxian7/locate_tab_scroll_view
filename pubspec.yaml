@@ -1,6 +1,6 @@
 name: locate_tab_scroll_view
-description: "A new Flutter project."
-version: 0.0.1
+description: "CustomScrollView & TabBar 锚点自动定位"
+version: 1.0.0
 homepage:
 
 environment:
