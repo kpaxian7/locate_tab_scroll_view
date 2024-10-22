@@ -36,9 +36,12 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
   ScrollController? _scrollController;
   List<double> widgetsOffsetList = [];
 
-  bool gestureInTabWidget = false;
+  // bool gestureInTabWidget = false;
 
   GestureDetectionCallback? gestureDetection;
+
+  bool tabTapByManual = false;
+  bool ignoreTabRelocate = false;
 
   @override
   void initState() {
@@ -103,9 +106,9 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
   }
 
   void _scrollViewUpdating() {
-    // print(
-    //     "_scrollViewUpdating, startByTabClick = $startByTabClick, startByTabClick = $startByTabClick");
-    if (gestureInTabWidget) {
+    print(
+        "_scrollViewUpdating, ignoreTabRelocate = $ignoreTabRelocate");
+    if (ignoreTabRelocate) {
       return;
     }
     double scrollViewOffset = _scrollController?.offset ?? 0.0;
@@ -144,6 +147,10 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
     // }
     // print("收到事件::::[$notification], axis:::[$axis], 需要忽略吗?:::[$needIgnore]");
 
+    // if (notification is UserScrollNotification) {
+    //   print("用户主动滑动！！！！");
+    // }
+
     if (notification is! ScrollNotification) {
       return false;
     }
@@ -151,6 +158,7 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
       return false;
     }
     if (notification is ScrollStartNotification) {
+      scrollStartReceived();
       _assembleWidgetsOffset();
     } else if (notification is ScrollUpdateNotification) {
       _scrollViewUpdating();
@@ -159,7 +167,8 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
   }
 
   void _tabClicked(int index) {
-    if (!gestureInTabWidget) {
+    print("触发了Tab定位的事件！！");
+    if (!tabTapByManual) {
       return;
     }
 
@@ -228,14 +237,27 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
     gestureDetection = valueChanged;
   }
 
+  tabTapManual(int index) {
+    print("用户主动点击了TabItem，记录标志位");
+    tabTapByManual = true;
+  }
+
+  /// 当垂直滑动事件收到后，判断是否是用户手动点击的
+  /// 如果是，则打开标志位，禁止在滑动过程中再次重定位TabBar
+  /// 如果不是，则关闭标志位，允许在滑动过程中再次重定位TabBar
+  scrollStartReceived() {
+    ignoreTabRelocate = tabTapByManual;
+    tabTapByManual = false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onPanDown: (e) {
-        // print("outer onPanDown");
+        print("outer onPanDown");
         bool res = gestureDetection?.call(e.globalPosition.dy) ?? false;
-        gestureInTabWidget = res;
-        print("点击在tab内吗？ res = $res");
+        // gestureInTabWidget = res;
+        // print("点击在tab内吗？ res = $res");
       },
       onPanEnd: (e) {
         // print("outer onPanEnd");

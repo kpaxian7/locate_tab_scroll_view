@@ -1,11 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:locate_tab_scroll_view/locate_tab_scroll_container.dart';
+import 'package:locate_tab_scroll_view/locate_tab_scroll_view.dart';
 
 typedef GestureDetectionCallback = bool Function(double v);
 
 class LocateTabWidget extends StatefulWidget {
-  final Widget child;
+  final MyTabs child;
 
   const LocateTabWidget({required this.child, super.key});
 
@@ -42,6 +43,18 @@ class _LocateTabWidgetState extends State<LocateTabWidget> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onPanDown: (e) {
+        print("inner onPanDown");
+      },
+      onPanEnd: (e) {
+        print("inner onPanEnd");
+      },
+      onPanCancel: () {
+        print("inner onPanCancel");
+      },
+      onTap: () {
+        print("inner Tap");
+      },
       child: Container(
         key: containerKey,
         child: widget.child,

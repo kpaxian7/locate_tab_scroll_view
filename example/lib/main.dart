@@ -82,7 +82,7 @@ class _MainTestPageState extends State<MainTestPage>
                   child: Container(
                     color: Colors.white,
                     child: LocateTabWidget(
-                        child: TabBar(
+                        child: MyTabs(
                       controller: tabController,
                       tabs: [
                         Tab(
@@ -146,5 +146,20 @@ class _MainTestPageState extends State<MainTestPage>
         ),
       ),
     );
+  }
+
+  test() {
+    return NotificationListener(
+        onNotification: (notification) {
+          if (notification is ScrollStartNotification) {
+            // 收到滑动开始的通知
+          } else if (notification is ScrollUpdateNotification) {
+            // 收到滑动进行中的通知
+          } else if (notification is ScrollEndNotification) {
+            // 收到滑动结束的通知
+          }
+          return false;
+        },
+        child: CustomScrollView());
   }
 }
