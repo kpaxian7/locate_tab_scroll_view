@@ -1,7 +1,7 @@
 name: locate_tab_scroll_view
 description: "CustomScrollView & TabBar 锚点自动定位"
 version: 1.0.0
-homepage:
+homepage: https://github.com/kpaxian7/locate_tab_scroll_view
 
 environment:
   sdk: '>=3.4.3 <4.0.0'
