@@ -3,13 +3,25 @@ import 'package:flutter/rendering.dart';
 import 'package:locate_tab_scroll_view/locate_tab_scroll_view.dart';
 
 class LocateTabScrollContainer extends StatefulWidget {
+  /// TabBar controller
   final TabController tabController;
+
+  /// header widgets的 [GlobalKey] 集合
   final List<GlobalKey> headerWidgetsKey;
+
+  /// TabBar widget的 [GlobalKey]
   final GlobalKey tabWidgetKey;
+
+  /// body widgets的 [GlobalKey] 集合
   final List<GlobalKey> bodyWidgetsKey;
+
+  /// 包裹的child，需要是 [CustomScrollView]
   final CustomScrollView child;
 
+  /// ScrollView滑动时TabBar的重定向时的滑动时间，默认值为200ms
   final Duration tabLocateDuration;
+
+  /// TabBar点击时ScrollView的重定向时的滑动时间，默认值为200ms
   final Duration scrollViewLocateDuration;
 
   const LocateTabScrollContainer({
