@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:locate_tab_scroll_view/locate_tab_scroll_view.dart';
 import 'package:locate_tab_scroll_view_example/random_height_container.dart';
@@ -52,7 +51,7 @@ class _MainTestPageState extends State<MainTestPage>
           bodyKey3,
           bodyKey4,
         ],
-        tabLocateDuration: const Duration(milliseconds: 200),
+        tabLocateDuration: const Duration(milliseconds: 1000),
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
@@ -82,9 +81,8 @@ class _MainTestPageState extends State<MainTestPage>
                   child: Container(
                     color: Colors.white,
                     child: LocateTabWidget(
-                        child: MyTabs(
                       controller: tabController,
-                      tabs: [
+                      tabs: const [
                         Tab(
                           text: "tab0",
                         ),
@@ -101,43 +99,41 @@ class _MainTestPageState extends State<MainTestPage>
                           text: "tab4",
                         ),
                       ],
-                      // isScrollable: true,
-                      // physics: BouncingScrollPhysics(),
-                    )),
+                    ),
                   )),
               pinned: true,
             ),
             SliverToBoxAdapter(
               key: bodyKey0,
-              child: RandomHeightContainer(
+              child: const RandomHeightContainer(
                 color: Colors.yellowAccent,
                 child: Text("Item0"),
               ),
             ),
             SliverToBoxAdapter(
               key: bodyKey1,
-              child: RandomHeightContainer(
+              child: const RandomHeightContainer(
                 color: Colors.green,
                 child: Text("Item1"),
               ),
             ),
             SliverToBoxAdapter(
               key: bodyKey2,
-              child: RandomHeightContainer(
+              child: const RandomHeightContainer(
                 color: Colors.blueAccent,
                 child: Text("Item2"),
               ),
             ),
             SliverToBoxAdapter(
               key: bodyKey3,
-              child: RandomHeightContainer(
+              child: const RandomHeightContainer(
                 color: Colors.redAccent,
                 child: Text("Item3"),
               ),
             ),
             SliverToBoxAdapter(
               key: bodyKey4,
-              child: RandomHeightContainer(
+              child: const RandomHeightContainer(
                 color: Colors.orange,
                 child: Text("Item4"),
               ),
@@ -146,20 +142,5 @@ class _MainTestPageState extends State<MainTestPage>
         ),
       ),
     );
-  }
-
-  test() {
-    return NotificationListener(
-        onNotification: (notification) {
-          if (notification is ScrollStartNotification) {
-            // 收到滑动开始的通知
-          } else if (notification is ScrollUpdateNotification) {
-            // 收到滑动进行中的通知
-          } else if (notification is ScrollEndNotification) {
-            // 收到滑动结束的通知
-          }
-          return false;
-        },
-        child: CustomScrollView());
   }
 }

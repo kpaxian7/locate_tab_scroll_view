@@ -1,7 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:locate_tab_scroll_view/locate_tab_widget.dart';
+import 'package:locate_tab_scroll_view/locate_tab_scroll_view.dart';
 
 class LocateTabScrollContainer extends StatefulWidget {
   final TabController tabController;
@@ -32,30 +31,33 @@ class LocateTabScrollContainer extends StatefulWidget {
 
 class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
     with TickerProviderStateMixin {
-  late TabController _tabController;
+  TabController? _tabController;
   ScrollController? _scrollController;
+
+  /// body widgets偏移量阶梯List，在初始化时 和 每次滑动事件开始时计算记录
   List<double> widgetsOffsetList = [];
 
-  // bool gestureInTabWidget = false;
-
-  GestureDetectionCallback? gestureDetection;
-
+  /// 标志位，是否是用户主动点击了TabBar的Item
   bool tabTapByManual = false;
+
+  /// 标志位，是否忽略TabBar重定位
+  /// 当滑动开始时，根据[tabTapByManual]来决定是否需要忽略本次滑动时TabBar的重定位
   bool ignoreTabRelocate = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = widget.tabController;
+    _tabController?.addListener(() {
+      if (widget.tabController.indexIsChanging == false) {
+        int clickIndex = widget.tabController.index;
+        _tabClicked(clickIndex);
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _assembleWidgetsOffset();
     });
-    widget.tabController.addListener(_tabControllerListener);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
   }
 
   @override
@@ -65,6 +67,7 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
         widget.child.controller ?? PrimaryScrollController.maybeOf(context);
   }
 
+  /// 记录body widgets的偏移量阶梯
   void _assembleWidgetsOffset() {
     widgetsOffsetList.clear();
     // header offset
@@ -89,85 +92,7 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
     }
   }
 
-  /// tab index changed
-  void _tabControllerListener() {
-    // print("tab 变化了！！！！indexIsChanging = ${widget.tabController.indexIsChanging}");
-    if (widget.tabController.indexIsChanging == false) {
-      // print("确定tab了!!!");
-      int clickIndex = widget.tabController.index;
-      _tabClicked(clickIndex);
-      // } else {
-      //   // 如果index开始变化的时候是滑动过程中，那么下一次index change不允许进行scrollView定位
-      //   if (scrolling) {
-      //     ignoreTabIndexing = true;
-      //   }
-      //   // print("_tabControllerListener index changing");
-    }
-  }
-
-  void _scrollViewUpdating() {
-    print(
-        "_scrollViewUpdating, ignoreTabRelocate = $ignoreTabRelocate");
-    if (ignoreTabRelocate) {
-      return;
-    }
-    double scrollViewOffset = _scrollController?.offset ?? 0.0;
-
-    int toIndex = -1;
-    for (int i = widgetsOffsetList.length - 1; i >= 0; i--) {
-      double itemOffset = widgetsOffsetList[i];
-
-      if (scrollViewOffset > itemOffset) {
-        toIndex = i;
-        break;
-      }
-    }
-    if (toIndex == -1) {
-      toIndex = 0;
-    }
-
-    _tabController.animateTo(toIndex, duration: widget.tabLocateDuration);
-  }
-
-  bool _scrollNotificationReceived(Notification notification) {
-    // String scrollNotificationType = "unknown";
-    // if (notification is ScrollStartNotification) {
-    //   scrollNotificationType = "start";
-    // } else if (notification is ScrollUpdateNotification) {
-    //   scrollNotificationType = "updating";
-    // } else if (notification is ScrollEndNotification) {
-    //   scrollNotificationType = "end";
-    // }
-    //
-    // bool needIgnore = notification is ScrollNotification &&
-    //     notification.metrics.axis == Axis.horizontal;
-    // Axis? axis;
-    // if (notification is ScrollNotification) {
-    //   axis = notification.metrics.axis;
-    // }
-    // print("收到事件::::[$notification], axis:::[$axis], 需要忽略吗?:::[$needIgnore]");
-
-    // if (notification is UserScrollNotification) {
-    //   print("用户主动滑动！！！！");
-    // }
-
-    if (notification is! ScrollNotification) {
-      return false;
-    }
-    if (notification.metrics.axis != Axis.vertical) {
-      return false;
-    }
-    if (notification is ScrollStartNotification) {
-      scrollStartReceived();
-      _assembleWidgetsOffset();
-    } else if (notification is ScrollUpdateNotification) {
-      _scrollViewUpdating();
-    } else if (notification is ScrollEndNotification) {}
-    return false;
-  }
-
   void _tabClicked(int index) {
-    print("触发了Tab定位的事件！！");
     if (!tabTapByManual) {
       return;
     }
@@ -203,76 +128,64 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
         duration: widget.scrollViewLocateDuration, curve: Curves.linear);
   }
 
-  bool checkTouchInTabWidgetArea(DragDownDetails tapDown) {
-    bool isTouchInTabArea = false;
-    GlobalKey headerLastWidgetKey = widget.headerWidgetsKey.last;
-    GlobalKey bodyFirstWidgetKey = widget.bodyWidgetsKey.first;
-
-    RenderObject? headerLastRenderObject =
-        headerLastWidgetKey.currentContext?.findRenderObject();
-    RenderObject? bodyFirstRenderObject =
-        bodyFirstWidgetKey.currentContext?.findRenderObject();
-
-    Offset? headerLastRenderPosition;
-    if (headerLastRenderObject is RenderSliverToBoxAdapter) {
-      headerLastRenderPosition =
-          headerLastRenderObject.child?.localToGlobal(Offset.zero);
-    }
-
-    Offset? bodyFirstRenderPosition;
-    if (bodyFirstRenderObject is RenderSliverToBoxAdapter) {
-      bodyFirstRenderPosition =
-          bodyFirstRenderObject.child?.localToGlobal(Offset.zero);
-    }
-
-    if (headerLastRenderPosition != null && bodyFirstRenderPosition != null) {
-      isTouchInTabArea =
-          tapDown.globalPosition.dy > headerLastRenderPosition.dy &&
-              tapDown.globalPosition.dy < bodyFirstRenderPosition.dy;
-    }
-    return isTouchInTabArea;
-  }
-
-  registerGestureListener(GestureDetectionCallback valueChanged) {
-    gestureDetection = valueChanged;
-  }
-
-  tabTapManual(int index) {
-    print("用户主动点击了TabItem，记录标志位");
-    tabTapByManual = true;
-  }
-
   /// 当垂直滑动事件收到后，判断是否是用户手动点击的
   /// 如果是，则打开标志位，禁止在滑动过程中再次重定位TabBar
   /// 如果不是，则关闭标志位，允许在滑动过程中再次重定位TabBar
-  scrollStartReceived() {
+  void _scrollStartReceived() {
     ignoreTabRelocate = tabTapByManual;
     tabTapByManual = false;
   }
 
+  /// 接收到滑动事件
+  void _scrollUpdateReceived() {
+    if (ignoreTabRelocate) {
+      return;
+    }
+    double scrollViewOffset = _scrollController?.offset ?? 0.0;
+
+    int toIndex = -1;
+    for (int i = widgetsOffsetList.length - 1; i >= 0; i--) {
+      double itemOffset = widgetsOffsetList[i];
+
+      if (scrollViewOffset > itemOffset) {
+        toIndex = i;
+        break;
+      }
+    }
+    if (toIndex == -1) {
+      toIndex = 0;
+    }
+
+    _tabController?.animateTo(toIndex, duration: widget.tabLocateDuration);
+  }
+
+  bool _scrollNotificationReceived(Notification notification) {
+    if (notification is! ScrollNotification) {
+      return false;
+    }
+    if (notification.metrics.axis != Axis.vertical) {
+      return false;
+    }
+    if (notification is ScrollStartNotification) {
+      _scrollStartReceived();
+      _assembleWidgetsOffset();
+    } else if (notification is ScrollUpdateNotification) {
+      _scrollUpdateReceived();
+    }
+    return false;
+  }
+
+  /// 由Widget树中的child-[LocateTabWidget]中onTap事件中调用
+  void tabTapManual(int index) {
+    tabTapByManual = true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanDown: (e) {
-        print("outer onPanDown");
-        bool res = gestureDetection?.call(e.globalPosition.dy) ?? false;
-        // gestureInTabWidget = res;
-        // print("点击在tab内吗？ res = $res");
-      },
-      onPanEnd: (e) {
-        // print("outer onPanEnd");
-      },
-      onPanCancel: () {
-        // print("outer onPanCancel");
-      },
-      onTapUp: (e) {
-        // print("outer onTap up");
-      },
-      child: NotificationListener(
-          onNotification: (Notification notification) {
-            return _scrollNotificationReceived(notification);
-          },
-          child: widget.child),
-    );
+    return NotificationListener(
+        onNotification: (Notification notification) {
+          return _scrollNotificationReceived(notification);
+        },
+        child: widget.child);
   }
 }
