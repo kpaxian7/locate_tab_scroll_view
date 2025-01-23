@@ -59,6 +59,11 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((t){
+      _scrollController =
+          widget.child.controller ?? PrimaryScrollController.maybeOf(context);
+    });
+
     _tabController = widget.tabController;
     _tabController?.addListener(() {
       if (widget.tabController.indexIsChanging == false) {
