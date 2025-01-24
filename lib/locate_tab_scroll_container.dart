@@ -46,6 +46,12 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
   TabController? _tabController;
   ScrollController? _scrollController;
 
+  ScrollController? get scrollController {
+    _scrollController ??=
+        widget.child.controller ?? PrimaryScrollController.maybeOf(context);
+    return _scrollController;
+  }
+
   /// body widgets偏移量阶梯List，在初始化时 和 每次滑动事件开始时计算记录
   List<double> widgetsOffsetList = [];
 
@@ -59,11 +65,6 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((t){
-      _scrollController =
-          widget.child.controller ?? PrimaryScrollController.maybeOf(context);
-    });
-
     _tabController = widget.tabController;
     _tabController?.addListener(() {
       if (widget.tabController.indexIsChanging == false) {
@@ -75,13 +76,6 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _assembleWidgetsOffset();
     });
-  }
-
-  @override
-  void didUpdateWidget(covariant LocateTabScrollContainer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _scrollController =
-        widget.child.controller ?? PrimaryScrollController.maybeOf(context);
   }
 
   /// 记录body widgets的偏移量阶梯
@@ -136,12 +130,12 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
 
     double toOffset = topWidgetsHeight + bottomWidgetsHeight;
 
-    double maxScrollExtent = _scrollController?.position.maxScrollExtent ?? 0.0;
+    double maxScrollExtent = scrollController?.position.maxScrollExtent ?? 0.0;
     if (toOffset > maxScrollExtent) {
       toOffset = maxScrollExtent;
     }
 
-    _scrollController?.animateTo(toOffset,
+    scrollController?.animateTo(toOffset,
         duration: widget.scrollViewLocateDuration, curve: Curves.linear);
   }
 
@@ -158,7 +152,7 @@ class LocateTabScrollContainerState extends State<LocateTabScrollContainer>
     if (ignoreTabRelocate) {
       return;
     }
-    double scrollViewOffset = _scrollController?.offset ?? 0.0;
+    double scrollViewOffset = scrollController?.offset ?? 0.0;
 
     int toIndex = -1;
     for (int i = widgetsOffsetList.length - 1; i >= 0; i--) {
